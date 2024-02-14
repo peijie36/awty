@@ -70,10 +70,10 @@
 
 
     <Button
+        android:id="@+id/btn_control"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Start"
-        android:enabled="false" />
+        android:text="Start" />
 
 </LinearLayout>

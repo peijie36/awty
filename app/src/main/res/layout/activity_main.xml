@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:paddingBottom="78dp"
     tools:context=".MainActivity">
 
     <LinearLayout
@@ -16,7 +17,7 @@
             android:id="@+id/txt_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Message: "
+            android:text="@string/messageLabel"
             android:textStyle="bold"
             android:labelFor="@+id/et_message" />
 
@@ -31,13 +32,14 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingRight="78dp" >
 
         <TextView
             android:id="@+id/txt_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Phone Number: "
+            android:text="@string/phoneLabel"
             android:textStyle="bold"
             android:labelFor="@+id/et_phone" />
 
@@ -51,13 +53,14 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingRight="130dp">
 
         <TextView
             android:id="@+id/txt_minutes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Duration (mins): "
+            android:text="@string/delayLabel"
             android:textStyle="bold"
             android:labelFor="@+id/et_minutes" />
 
@@ -74,6 +77,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Start" />
+        android:text="@string/controlButton"
+        android:enabled="false" />
 
 </LinearLayout>

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">awty</string>
+    <string name="messageLabel">Message: </string>
+    <string name="phoneLabel">Phone Number: </string>
+    <string name="delayLabel">Delay(mins): </string>
+    <string name="controlButton">Start</string>
 </resources>

@@ -1,19 +1,27 @@
 package edu.uw.ischool.peijie36.awty
 
-import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Timer
+import java.util.TimerTask
 
 class MainActivity : AppCompatActivity() {
+    private var timer: Timer? = null
     private lateinit var userMessageET : EditText
     private lateinit var phoneNumET : EditText
     private lateinit var durationET : EditText
     private lateinit var controlButton : Button
-    private var isServiceRunning = false
+    private var sendingMessage = false
+    private val SEND_SMS_PERMISSION_REQUEST_CODE = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         phoneNumET = findViewById(R.id.et_phone)
         durationET = findViewById(R.id.et_minutes)
         controlButton = findViewById(R.id.btn_control)
+
+        checkPermission()
 
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -43,32 +53,65 @@ class MainActivity : AppCompatActivity() {
         durationET.addTextChangedListener(textWatcher)
 
         controlButton.setOnClickListener {
-            if (!isServiceRunning) {
-                runService()
+            if(!sendingMessage) {
+                startSendingMessages()
             } else {
-                stopService()
+                timer?.cancel()
+                timer = null
+                Toast.makeText(this, "Stopped sending messages", Toast.LENGTH_LONG).show()
+                sendingMessage = false
+                controlButton.text = "Start"
             }
         }
     }
 
-    private fun runService() {
-        val message = userMessageET.text.toString()
+    private fun startSendingMessages() {
         val phoneNumber = phoneNumET.text.toString()
-        val delayInMins = (durationET.text.toString().toIntOrNull() ?: 0) * 1000 * 60
+        val message = userMessageET.text.toString()
+        val delayStr = durationET.text.toString().toLong()
+        val delayInMins = delayStr * 60 * 1000
 
-        val intent = Intent(this, MessageService::class.java)
-        intent.putExtra("message", message)
-        intent.putExtra("phoneNumber", phoneNumber)
-        intent.putExtra("delay", delayInMins)
-        startService(intent)
-        isServiceRunning = true
+        timer = Timer()
+        timer?.schedule(object : TimerTask() {
+            override fun run() {
+                sendSmsMessage(phoneNumber, message)
+            }
+        }, 0, delayInMins)
+
         controlButton.text = "Stop"
+        sendingMessage = true
     }
 
-    private fun stopService() {
-        val intent = Intent(this, MessageService::class.java)
-        stopService(intent)
-        isServiceRunning = false
-        controlButton.text = "Start"
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == SEND_SMS_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+            } else {
+                // Permission denied, inform user or handle gracefully
+                Toast.makeText(this, "SMS permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun sendSmsMessage(phoneNumber: String, message: String) {
+        checkPermission()
+        try {
+            val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                getSystemService(SmsManager::class.java)
+            else
+                SmsManager.getDefault()
+            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+        } catch (e: Exception) {
+            Log.e("SendSMS", "Error sending SMS: ${e.message}", e)
+        }
+
+    }
+
+    private fun checkPermission() {
+        val check = checkSelfPermission(android.Manifest.permission.SEND_SMS)
+        if(check != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(android.Manifest.permission.SEND_SMS), SEND_SMS_PERMISSION_REQUEST_CODE)
+        }
     }
 }
